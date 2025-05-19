@@ -50,3 +50,15 @@ def latest_entries(
         for row in rows
     ]
     return entries[-n:]
+
+def load_entries(*, file_path: str = "mood.csv") -> List[MoodEntry]:
+    """Return all mood entries from the CSV file."""
+    path = Path(file_path)
+    if not path.exists():
+        return []
+    with path.open(newline="") as csvfile:
+        rows = list(csv.DictReader(csvfile))
+    return [
+        MoodEntry(row["date"], int(row["rating"]), row.get("note") or None)
+        for row in rows
+    ]
