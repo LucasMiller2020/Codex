@@ -1,6 +1,7 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 from datetime import date
 import csv
+import json
 from pathlib import Path
 from typing import List, Optional
 
@@ -10,6 +11,9 @@ class MoodEntry:
     date: str
     rating: int
     note: Optional[str] = None
+
+# Default JSON data file stored at the repository root
+DATA_FILE = Path(__file__).resolve().parent.parent / "moods.json"
 
 def log_mood(
     rating: int,
@@ -50,3 +54,22 @@ def latest_entries(
         for row in rows
     ]
     return entries[-n:]
+
+
+def load_entries() -> List[MoodEntry]:
+    """Load all mood entries from the JSON ``DATA_FILE``."""
+    path = Path(DATA_FILE)
+    if not path.exists():
+        return []
+    with path.open() as f:
+        data = json.load(f)
+    return [MoodEntry(**item) for item in data]
+
+
+def save_entry(entry: MoodEntry) -> None:
+    """Append ``entry`` to ``DATA_FILE``."""
+    path = Path(DATA_FILE)
+    entries = load_entries()
+    entries.append(entry)
+    with path.open("w") as f:
+        json.dump([asdict(e) for e in entries], f)
